@@ -1,19 +1,29 @@
-const express = require('express');
-const app = express();
-const hostname = '127.0.0.1';
-const http = require('http');
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+var sassMiddleware = require('node-sass-middleware');
 
-let port = process.env.PORT;
-if (port == null || port == "") {
-  port = 8000;
-}
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
 
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello World');
-});
+var app = express();
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(sassMiddleware({
+  src: path.join(__dirname, 'public'),
+  force: true,
+  response: true,
+  indentedSyntax: false, // true = .sass and false = .scss
+  sourceMap: true
+}));
+
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+
+module.exports = app;

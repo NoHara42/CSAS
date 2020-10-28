@@ -1,1 +1,1 @@
-web: node app.js
+web: DEBUG=csas:* npm start
