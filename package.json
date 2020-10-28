@@ -1,6 +1,6 @@
 {
   "name": "CSAS",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Collaborative Street Art Simulator - a project for the module: \"Interative Simulation Systems\" at the University of Zagreb.",
   "main": "app.js",
   "scripts": {
@@ -11,8 +11,8 @@
     "url": "git+https://github.com/NoHara42/CSAS.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Ned O'Hara",
+  "license": "GNU GPL3",
   "bugs": {
     "url": "https://github.com/NoHara42/CSAS/issues"
   },
@@ -21,5 +21,8 @@
     "express": "^4.17.1",
     "socket.io": "^2.3.0",
     "three": "^0.121.1"
+  },
+  "engines": {
+    "node": "14.15.0"
   }
 }
