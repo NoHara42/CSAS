@@ -9,11 +9,7 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'public/images')));
-app.use(express.static(path.join(__dirname, 'public/javascripts')));
-app.use(express.static(path.join(__dirname, 'public/stylesheets')));
-
+app.use(express.static('public'));
 
 app.use(logger('dev'));
 app.use(express.json());
