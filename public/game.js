@@ -28,6 +28,10 @@ class Game{
 		}
 	}
 	
+	set activeCamera(object){
+		this.player.cameras.active = object;
+	}
+
 	init() {
 
 		this.camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 5000 );
@@ -104,7 +108,33 @@ class Game{
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		this.renderer.shadowMap.enabled = true;
 		this.container.appendChild( this.renderer.domElement );
-        
+
+		this.graffitiButton = document.createElement('button');
+		this.graffitiButton.id = 'grafButton'
+		this.graffitiButton.style.z = '0';
+		this.graffitiButton.style.position = 'absolute';
+		this.graffitiButton.style.left = '20px';
+		this.graffitiButton.style.top = '20px';
+		this.graffitiButton.style.width = '60px';
+		this.graffitiButton.style.height = '60px';
+		this.graffitiButton.style.borderRadius = '50%';
+		this.graffitiButton.style.outline = 'none';
+		this.graffitiButton.style.border = 'medium solid rgb(68, 68, 68)';
+		this.graffitiButton.style.background = 'rgba(126, 126, 126, 0.5)';
+
+		this.graffitiIcon = document.createElement('img');
+		this.graffitiIcon.style.height = '30px';
+		this.graffitiIcon.style.width = '30px';
+		this.graffitiIcon.style.filter = 'invert(100%)';
+		this.graffitiIcon.style.userSelect = 'none';
+
+		this.graffitiIcon.src = './assets/icons/spray.svg';
+
+		document.body.appendChild(game.graffitiButton);
+		this.graffitiButton.appendChild(game.graffitiIcon);
+		this.graffitiButton.addEventListener("click", () => {
+			this.changePerspective();}, false);
+
 		window.addEventListener( 'resize', function(){ game.onWindowResize(); }, false );
 	}
 	
@@ -120,13 +150,27 @@ class Game{
                 game.createColliders();
                 game.joystick = new JoyStick({
                     onMove: game.playerControl,
-                    game: game
-                });
+					game: game,
+				});
+
 				delete game.anims;
 				game.action = "Idle";
 				game.animate();
 			}
 		});	
+	}
+
+	changePerspective() {
+		console.log("HERE");
+		if ( this.player.cameras!=undefined && this.player.cameras.active!=undefined) {
+			if (this.player.cameras.active == this.player.cameras.fps) {
+				console.log("Perspective changed to third-person.");
+				this.player.cameras.active = this.player.cameras.back;
+			} else if (this.player.cameras.active == this.player.cameras.back) {
+				console.log("Perspective changed to first-person.");
+				this.player.cameras.active = this.player.cameras.fps;
+			}
+		}
 	}
     
     createColliders(){
@@ -150,7 +194,11 @@ class Game{
         stage.position.set(0, 20, 0);
         this.colliders.push(stage);
         this.scene.add(stage);
-    }
+	}
+	
+	detectSurface() {
+		
+	}
     
     movePlayer(dt){
 		const pos = this.player.object.position.clone();
@@ -286,29 +334,39 @@ class Game{
 		}
 	}
     
-    set activeCamera(object){
-		this.player.cameras.active = object;
-	}
+
     
     createCameras(){
 		const offset = new THREE.Vector3(0, 80, 0);
 		const front = new THREE.Object3D();
 		front.position.set(112, 100, 600);
 		front.parent = this.player.object;
+
+		const fps = new THREE.Object3D();
+		fps.position.set(0, 250, 125);
+		fps.parent = this.player.object;
+		const fpsFront = new THREE.Object3D();
+		fpsFront.position.set(0, 0, 1000);
+		fpsFront.parent = fps;
+
 		const back = new THREE.Object3D();
 		back.position.set(0, 300, -600);
 		back.parent = this.player.object;
+
 		const wide = new THREE.Object3D();
 		wide.position.set(178, 139, 1665);
 		wide.parent = this.player.object;
+
 		const overhead = new THREE.Object3D();
 		overhead.position.set(0, 400, 0);
 		overhead.parent = this.player.object;
+
 		const collect = new THREE.Object3D();
 		collect.position.set(40, 82, 94);
 		collect.parent = this.player.object;
-		this.player.cameras = { front, back, wide, overhead, collect };
-		game.activeCamera = this.player.cameras.back;	
+
+		this.player.cameras = { front, back, wide, overhead, collect, fps, fpsFront };
+		game.activeCamera = this.player.cameras.fps;	
 	}
     
 	animate() {
@@ -329,10 +387,20 @@ class Game{
 		if (this.player.move !== undefined) this.movePlayer(dt);
 		
 		if (this.player.cameras!=undefined && this.player.cameras.active!=undefined){
-			this.camera.position.lerp(this.player.cameras.active.getWorldPosition(new THREE.Vector3()), 0.05);
-			const pos = this.player.object.position.clone();
-			pos.y += 200;
-			this.camera.lookAt(pos);
+			if (this.player.cameras.active == this.player.cameras.fps) {
+				const cameraWorldPos = new THREE.Vector3();
+				this.player.cameras.active.getWorldPosition(cameraWorldPos);
+				this.camera.position.lerp(cameraWorldPos, 0.4);
+				const faceThisVector = new THREE.Vector3();
+				this.player.cameras.fpsFront.getWorldPosition(faceThisVector)
+				this.camera.lookAt(faceThisVector);
+			} else if (this.player.cameras.active == this.player.cameras.back) {
+				this.player.cameras.active = this.player.cameras.back;
+				this.camera.position.lerp(this.player.cameras.active.getWorldPosition(new THREE.Vector3()), 0.05);
+				const pos = this.player.object.position.clone();
+				pos.y += 200;
+				this.camera.lookAt(pos);
+			}
 		}
         
         if (this.sun != undefined){
