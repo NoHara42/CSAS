@@ -27,10 +27,6 @@ class Game{
 			console.error(JSON.stringify(error));
 		}
 	}
-	
-	set activeCamera(object){
-		this.player.cameras.active = object;
-	}
 
 	init() {
 
@@ -133,7 +129,8 @@ class Game{
 		document.body.appendChild(game.graffitiButton);
 		this.graffitiButton.appendChild(game.graffitiIcon);
 		this.graffitiButton.addEventListener("click", () => {
-			this.changePerspective();}, false);
+			this.changePerspective();
+		}, false);
 
 		window.addEventListener( 'resize', function(){ game.onWindowResize(); }, false );
 	}
@@ -161,7 +158,6 @@ class Game{
 	}
 
 	changePerspective() {
-		console.log("HERE");
 		if ( this.player.cameras!=undefined && this.player.cameras.active!=undefined) {
 			if (this.player.cameras.active == this.player.cameras.fps) {
 				console.log("Perspective changed to third-person.");
@@ -366,7 +362,7 @@ class Game{
 		collect.parent = this.player.object;
 
 		this.player.cameras = { front, back, wide, overhead, collect, fps, fpsFront };
-		game.activeCamera = this.player.cameras.fps;	
+		this.player.cameras.active = this.player.cameras.back;
 	}
     
 	animate() {
