@@ -2,3 +2,4 @@
 npm-debug.log
 .DS_Store
 /*.env
+/public/assets/rigs/can/GraffitiLable.psd

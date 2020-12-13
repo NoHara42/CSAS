@@ -1,3 +1,5 @@
+const { Raycaster } = require("three");
+
 class Game{
 	constructor(){
 		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -15,7 +17,7 @@ class Game{
 		document.body.appendChild( this.container );
         
 		const game = this;
-		this.anims = ['Walking', 'Walking Backwards', 'Turn', 'Running', 'Pointing Gesture'];
+		this.anims = ['Walking', 'Walking Backwards', 'Turn', 'Running', 'Pointing Gesture', 'Pointing'];
         
 		this.assetsPath = './assets/';
 		
@@ -64,47 +66,79 @@ class Game{
 		this.scene.add( grid );
 
 		// model
-		const loader = new THREE.FBXLoader();
 		const game = this;
-		
-		loader.load( `${this.assetsPath}rigs/people/Streetman.fbx`, function ( object ) {
+		this.loader = new THREE.FBXLoader();
 
-			object.mixer = new THREE.AnimationMixer( object );
-			game.player.mixer = object.mixer;
-			game.player.root = object.mixer.getRoot();
-			
-			object.name = "StreetMan";
-					
-			object.traverse( function ( child ) {
-				if ( child.isMesh ) {
-					child.castShadow = true;
-					child.receiveShadow = false;		
-				}
-			} );
-			
-            const tLoader = new THREE.TextureLoader();
-            tLoader.load(`${game.assetsPath}images/SimplePeople_StreetMan_White.png`, function(texture){
-				object.traverse( function ( child ) {
-					if ( child.isMesh ){
-						child.material.map = texture;
+		try {
+			//load Player Rig
+			this.loader.load( `${this.assetsPath}rigs/people/Streetman.fbx`, (streetManObject) => {
+				this.loader.load( `${this.assetsPath}rigs/can/sprayCan.fbx`, (sprayCanObject) => {
+	
+				streetManObject.mixer = new THREE.AnimationMixer( streetManObject );
+				this.player.mixer = streetManObject.mixer;
+				this.player.root = streetManObject.mixer.getRoot();
+				this.player.sprayMarkings = new Array();
+				
+				streetManObject.name = "StreetMan";
+	
+				streetManObject.traverse( function ( child ) {
+					if ( child.isMesh ) {
+						child.castShadow = true;
+						child.receiveShadow = false;		
 					}
 				} );
+				
+				const tLoader = new THREE.TextureLoader();
+				tLoader.load(`${game.assetsPath}images/SimplePeople_StreetMan_White.png`, function(texture){
+					streetManObject.traverse( function ( child ) {
+						if ( child.isMesh ){
+							child.material.map = texture;
+						}
+					} );
+				});
+				
+				this.player.object = new THREE.Object3D();
+				this.scene.add(this.player.object);
+				this.player.object.add(streetManObject);
+				this.animations.Idle = streetManObject.animations[0];
+				this.loadNextAnim();
+				
+				
+				//Spraycan
+				sprayCanObject.name = "SprayCan";
+				
+				sprayCanObject.traverse( function ( child ) {
+					if ( child.isMesh ) {
+						child.castShadow = true;
+						child.receiveShadow = false;		
+					}
+				} );
+				
+				tLoader.load(`${game.assetsPath}images/GraffitiLable.png`, (texture) => {
+					console.log("SprayCan Texture loaded.");
+					sprayCanObject.traverse(( child ) => {
+						if ( child.isMesh ){
+							child.material.map = texture;
+						}
+					} );
+				});
+				
+				this.player.sprayCan = new THREE.Object3D();
+				this.player.sprayCan = sprayCanObject;
+				this.player.sprayCan.scale.set(0.15,0.15,0.15);
 			});
-            
-            game.player.object = new THREE.Object3D();
-			game.scene.add(game.player.object);
-			game.player.object.add(object);
-			game.animations.Idle = object.animations[0];
-            
-            game.loadNextAnim(loader);
 		} );
 		
+		} catch (error) {
+			console.error(error);
+		}
+
 		this.renderer = new THREE.WebGLRenderer( { antialias: true } );
 		this.renderer.setPixelRatio( window.devicePixelRatio );
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		this.renderer.shadowMap.enabled = true;
 		this.container.appendChild( this.renderer.domElement );
-
+		
 		this.graffitiButton = document.createElement('button');
 		this.graffitiButton.id = 'grafButton'
 		this.graffitiButton.style.z = '0';
@@ -117,36 +151,67 @@ class Game{
 		this.graffitiButton.style.outline = 'none';
 		this.graffitiButton.style.border = 'medium solid rgb(68, 68, 68)';
 		this.graffitiButton.style.background = 'rgba(126, 126, 126, 0.5)';
+		
+		this.sprayButton = document.createElement('button');
+		this.sprayButton.id = 'grafButton'
+		this.sprayButton.style.z = '0';
+		this.sprayButton.style.position = 'absolute';
+		this.sprayButton.style.right = '20px';
+		this.sprayButton.style.bottom = '45px';
+		this.sprayButton.style.width = '60px';
+		this.sprayButton.style.height = '60px';
+		this.sprayButton.style.borderRadius = '50%';
+		this.sprayButton.style.outline = 'none';
+		this.sprayButton.style.border = 'medium solid rgb(68, 68, 68)';
+		this.sprayButton.style.background = 'rgba(126, 126, 126, 0.5)';
+
 
 		this.graffitiIcon = document.createElement('img');
 		this.graffitiIcon.style.height = '30px';
 		this.graffitiIcon.style.width = '30px';
 		this.graffitiIcon.style.filter = 'invert(100%)';
 		this.graffitiIcon.style.userSelect = 'none';
-
 		this.graffitiIcon.src = './assets/icons/spray.svg';
 
+		this.runIcon = document.createElement('img');
+		this.runIcon.style.height = '30px';
+		this.runIcon.style.width = '30px';
+		this.runIcon.style.filter = 'invert(100%)';
+		this.runIcon.style.userSelect = 'none';
+		this.runIcon.src = './assets/icons/run.svg';
+
+		
 		document.body.appendChild(game.graffitiButton);
 		this.graffitiButton.appendChild(game.graffitiIcon);
 		this.graffitiButton.addEventListener("click", () => {
 			this.changePerspective();
+			this.changeButtonIcon();
+			if (this.player.spraying) {
+				document.body.appendChild(game.sprayButton);
+				this.sprayButton.appendChild(game.graffitiIcon);
+			} else {
+				document.body.removeChild(game.sprayButton);
+			}
 		}, false);
-
+		this.sprayButton.addEventListener("click", () => {
+			this.spray();
+		}, false);
 		window.addEventListener( 'resize', function(){ game.onWindowResize(); }, false );
 	}
 	
-    loadNextAnim(loader){
+	
+    loadNextAnim(){
 		let anim = this.anims.pop();
 		const game = this;
-		loader.load( `${this.assetsPath}anims/${anim}.fbx`, function( object ){
+		this.loader.load( `${this.assetsPath}anims/${anim}.fbx`, ( object ) => {
 			game.animations[anim] = object.animations[0];
 			if (game.anims.length>0){
-				game.loadNextAnim(loader);
+				game.loadNextAnim();
 			}else{
-                game.createCameras();
-                game.createColliders();
-                game.joystick = new JoyStick({
-                    onMove: game.playerControl,
+				game.createCameras();
+				game.createColliders();
+				game.joystick = new JoyStick({
+					onMove: game.playerControl,
 					game: game,
 				});
 
@@ -157,13 +222,29 @@ class Game{
 		});	
 	}
 
+	changeButtonIcon() {
+		if (this.graffitiButton.contains(this.graffitiIcon)) {
+			this.graffitiButton.removeChild(this.graffitiIcon);
+			this.graffitiButton.appendChild(this.runIcon);
+		} else {
+			this.graffitiButton.removeChild(this.runIcon);
+			this.graffitiButton.appendChild(this.graffitiIcon);
+		}
+	}
+
 	changePerspective() {
 		if ( this.player.cameras!=undefined && this.player.cameras.active!=undefined) {
 			if (this.player.cameras.active == this.player.cameras.fps) {
 				console.log("Perspective changed to third-person.");
+				this.player.spraying = false;
+				this.action = 'Idle';
 				this.player.cameras.active = this.player.cameras.back;
 			} else if (this.player.cameras.active == this.player.cameras.back) {
 				console.log("Perspective changed to first-person.");
+				this.player.spraying = true;
+				this.action = 'Pointing';
+				this.delayActionPause();
+
 				this.player.cameras.active = this.player.cameras.fps;
 			}
 		}
@@ -191,34 +272,35 @@ class Game{
         this.colliders.push(stage);
         this.scene.add(stage);
 	}
-	
-	detectSurface() {
-		
-	}
+
     
     movePlayer(dt){
 		const pos = this.player.object.position.clone();
 		pos.y += 60;
 		let dir = new THREE.Vector3();
 		this.player.object.getWorldDirection(dir);
-		if (this.player.move.forward<0) dir.negate();
+		if (this.player.move.forward<0) {
+			dir.negate();
+		}
 		let raycaster = new THREE.Raycaster(pos, dir);
 		let blocked = false;
 		const colliders = this.colliders;
 	
 		if (colliders!==undefined){ 
 			const intersect = raycaster.intersectObjects(colliders);
-			if (intersect.length>0){
-				if (intersect[0].distance<50) blocked = true;
+			if (intersect.length > 0){
+				if (intersect[0].distance < 50) blocked = true;
 			}
 		}
 		
 		if (!blocked){
-			if (this.player.move.forward>0){
-				const speed = (this.player.action=='Running') ? 400 : 150;
-				this.player.object.translateZ(dt*speed);
-			}else{
-				this.player.object.translateZ(-dt*30);
+			if(!this.player.spraying) {
+				if (this.player.move.forward>0){
+					const speed = (this.player.action=='Running') ? 400 : 150;
+					this.player.object.translateZ(dt*speed);
+				}else{
+					this.player.object.translateZ(-dt*30);
+				}
 			}
 		}
 		
@@ -268,7 +350,7 @@ class Game{
 						this.player.object.position.y = targetY;
 					}
 				}
-			}else if (this.player.object.position.y>0){
+			} else if (this.player.object.position.y>0){
                 if (this.player.velocityY==undefined) this.player.velocityY = 0;
                 this.player.velocityY += dt * gravity;
                 this.player.object.position.y -= this.player.velocityY;
@@ -295,41 +377,64 @@ class Game{
         action.time = 0;
 		this.player.mixer.stopAllAction();
 		this.player.action = name;
+		this.player.clipAction = action;
 		this.player.actionTime = Date.now();
         this.player.actionName = name;
 		
 		action.fadeIn(0.5);	
 		action.play();
 	}
-    
+
+	delayActionPause() {
+		setTimeout(() => {
+			this.player.clipAction.paused = true;
+		}, 1000);
+	}
+
     get action(){
         if (this.player===undefined || this.player.actionName===undefined) return "";
         return this.player.actionName;
     }
     
     playerControl(forward, turn){
-		turn = -turn;
-		
-		if (forward>0.3){
-			if (this.player.action!='Walking' && this.player.action!='Running') this.action = 'Walking';
-		}else if (forward<-0.3){
-			if (this.player.action!='Walking Backwards') this.action = 'Walking Backwards';
-		}else{
-			forward = 0;
-			if (Math.abs(turn)>0.1){
-				if (this.player.action != 'Turn') this.action = 'Turn';
-			}else if (this.player.action!="Idle"){
-				this.action = 'Idle';
+		if(!this.player.spraying) {
+			turn = -turn;
+			if (forward>0.3){
+				if (this.player.action!='Walking' && this.player.action!='Running') this.action = 'Walking';
+			}else if (forward<-0.3){
+				if (this.player.action!='Walking Backwards') this.action = 'Walking Backwards';
+			}else{
+				forward = 0;
+				if (Math.abs(turn)>0.1){
+					if (this.player.action != 'Turn') this.action = 'Turn';
+				}else if (this.player.action!="Idle"){
+					this.action = 'Idle';
+				}
 			}
-		}
-		
-		if (forward==0 && turn==0){
-			delete this.player.move;
-		}else{
-			this.player.move = { forward, turn }; 
+			
+			if (forward==0 && turn==0){
+				delete this.player.move;
+			}else{
+				this.player.move = { forward, turn }; 
+			}
+		} else {
+			
+			turn = -turn;
+			const worldDirPlayer = new THREE.Vector3();
+			this.player.object.getWorldDirection(worldDirPlayer).normalize().cross(new THREE.Vector3(0,1,0));
+			if (this.player.object.rotation.x >=-1 && this.player.object.rotation.x <= 1) {
+				this.player.object.rotateOnAxis(worldDirPlayer, forward/100);
+				if (this.player.object.rotation.x <-1) this.player.object.rotation.x = -1;
+				if (this.player.object.rotation.x >1) this.player.object.rotation.x = 1;
+			} else if (this.player.object.rotation.y >=-1 && this.player.object.rotation.y <= 1) {
+				this.player.object.rotateOnAxis(worldDirPlayer, forward/100);
+				if (this.player.object.rotation.y <-1) this.player.object.rotation.y = -1;
+				if (this.player.object.rotation.y >1) this.player.object.rotation.y = 1;
+			}
+			
+			// console.log(this.player.object.rotation.x, this.player.object.rotation.y, this.player.object.rotation.z, forward);
 		}
 	}
-    
 
     
     createCameras(){
@@ -338,12 +443,18 @@ class Game{
 		front.position.set(112, 100, 600);
 		front.parent = this.player.object;
 
+		const fpsMiddle = new THREE.Object3D();
+		fpsMiddle.position.set(-15, 100, 35);
+		fpsMiddle.parent = this.player.object;
 		const fps = new THREE.Object3D();
-		fps.position.set(0, 250, 125);
+		fps.position.set(-15, 225, 35);
 		fps.parent = this.player.object;
 		const fpsFront = new THREE.Object3D();
-		fpsFront.position.set(0, 0, 1000);
+		fpsFront.position.set(0, 0, 200);
 		fpsFront.parent = fps;
+		const fpsCan = new THREE.Object3D();
+		fpsCan.position.set(-17, -10, 65);
+		fpsCan.parent = fps;
 
 		const back = new THREE.Object3D();
 		back.position.set(0, 300, -600);
@@ -361,16 +472,38 @@ class Game{
 		collect.position.set(40, 82, 94);
 		collect.parent = this.player.object;
 
-		this.player.cameras = { front, back, wide, overhead, collect, fps, fpsFront };
+		this.player.cameras = { front, back, wide, overhead, collect, fps, fpsFront, fpsCan, fpsMiddle };
 		this.player.cameras.active = this.player.cameras.back;
 	}
-    
+	
+	spray() {
+		const geometry = new THREE.TetrahedronGeometry().scale(5, 5, 5);
+		const material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+		const marking = new THREE.Mesh( geometry, material );
+		const worldPosCan = new THREE.Vector3();
+		
+		this.player.cameras.fpsCan.getWorldPosition(worldPosCan);
+		marking.position.set(worldPosCan.x, worldPosCan.y, worldPosCan.z);
+		//TODO:
+		// const raycaster = new Raycaster(marking.position);
+	
+		this.player.sprayMarkings.push(marking);
+		this.scene.add(marking);
+		console.log(this.player.sprayMarkings);
+		
+	}
+
 	animate() {
 		const game = this;
 		const dt = this.clock.getDelta();
 		
-		requestAnimationFrame( function(){ game.animate(); } );
+		requestAnimationFrame( () => { game.animate(); } );
 		
+		if (this.player.sprayMarkings) {
+			this.player.sprayMarkings.map(async (value, index, arr) => {
+				value.translateOnAxis(this.player.cameras.fpsCan.getWorldDirection(), 20);
+			})
+		}
 		if (this.player.mixer!==undefined) this.player.mixer.update(dt);
 		
         if (this.player.action=='Walking'){
@@ -379,17 +512,24 @@ class Game{
 				this.action = 'Running';
 			}
 		}
-		
+		// console.log("where is the can", this.player.sprayCan.position);
 		if (this.player.move !== undefined) this.movePlayer(dt);
 		
 		if (this.player.cameras!=undefined && this.player.cameras.active!=undefined){
 			if (this.player.cameras.active == this.player.cameras.fps) {
+				//1st person perspective
 				const cameraWorldPos = new THREE.Vector3();
 				this.player.cameras.active.getWorldPosition(cameraWorldPos);
 				this.camera.position.lerp(cameraWorldPos, 0.4);
 				const faceThisVector = new THREE.Vector3();
 				this.player.cameras.fpsFront.getWorldPosition(faceThisVector)
 				this.camera.lookAt(faceThisVector);
+				//move can to hand
+				const worldPosCan = new THREE.Vector3();
+				this.player.cameras.fpsCan.getWorldPosition(worldPosCan);
+				this.player.sprayCan.position.set(worldPosCan.x, worldPosCan.y, worldPosCan.z);
+				this.scene.add(this.player.sprayCan);
+				
 			} else if (this.player.cameras.active == this.player.cameras.back) {
 				this.player.cameras.active = this.player.cameras.back;
 				this.camera.position.lerp(this.player.cameras.active.getWorldPosition(new THREE.Vector3()), 0.05);
