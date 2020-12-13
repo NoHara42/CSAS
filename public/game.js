@@ -1,5 +1,3 @@
-const { Raycaster } = require("three");
-
 class Game{
 	constructor(){
 		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
