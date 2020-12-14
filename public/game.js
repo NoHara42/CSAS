@@ -282,6 +282,7 @@ class Game{
 				this.delayActionPause();
 
 				this.player.cameras.active = this.player.cameras.fps;
+				this.player.cameras.active.updateMatrix();
 				this.player.cameras.active.matrixAutoUpdate = false;
 
 			}
@@ -461,21 +462,8 @@ class Game{
 			const mX = new THREE.Matrix4().makeRotationX(forward);
 			const mY = new THREE.Matrix4().makeRotationY(turn);
 			const m = new THREE.Matrix4().multiplyMatrices( mX, mY );
-
+			m.setPosition(this.player.cameras.active.position);
 			this.player.cameras.active.matrix.copy(m);
-
-			// if (this.player.object.rotation.x >=-1 && this.player.object.rotation.x <= 1) {
-			// 	// this.player.object.rotateOnAxis(worldDirPlayer, forward/100);
-			// 	// this.player.object.matrix.makeRotation
-			// 	if (this.player.object.rotation.x <-1) this.player.object.rotation.x = -1;
-			// 	if (this.player.object.rotation.x >1) this.player.object.rotation.x = 1;
-			// } else if (this.player.object.rotation.y >=-1 && this.player.object.rotation.y <= 1) {
-			// 	// this.player.object.rotateOnAxis(worldDirPlayer, forward/100);
-			// 	if (this.player.object.rotation.y <-1) this.player.object.rotation.y = -1;
-			// 	if (this.player.object.rotation.y >1) this.player.object.rotation.y = 1;
-			// }
-			
-			// console.log(this.player.object.rotation.x, this.player.object.rotation.y, this.player.object.rotation.z, forward);
 		}
 	}
 
