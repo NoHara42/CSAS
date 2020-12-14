@@ -148,7 +148,9 @@ class Game{
 		this.graffitiButton.style.outline = 'none';
 		this.graffitiButton.style.border = 'medium solid rgb(68, 68, 68)';
 		this.graffitiButton.style.background = 'rgba(126, 126, 126, 0.5)';
-		
+		this.graffitiButton.style.userDrag = 'none';
+		this.graffitiButton.style.userSelect = 'none';
+
 		this.sprayButton = document.createElement('button');
 		this.sprayButton.id = 'grafButton'
 		this.sprayButton.style.z = '0';
@@ -161,14 +163,20 @@ class Game{
 		this.sprayButton.style.outline = 'none';
 		this.sprayButton.style.border = 'medium solid rgb(68, 68, 68)';
 		this.sprayButton.style.background = 'rgba(126, 126, 126, 0.5)';
+		this.sprayButton.style.userDrag = 'none';
+		this.sprayButton.style.userSelect = 'none';
 
 
 		this.graffitiIcon = document.createElement('img');
 		this.graffitiIcon.style.height = '7.5vw';
+		this.graffitiIcon.style.userDrag = 'none';
+		this.graffitiIcon.style.userSelect = 'none';
+
 		this.graffitiIcon.style.width = '7.5vw';
 		this.graffitiIcon.style.filter = 'invert(100%)';
 		this.graffitiIcon.style.userSelect = 'none';
 		this.graffitiIcon.src = './assets/icons/spray.svg';
+		this.graffitiIcon.draggable = false;
 
 		this.runIcon = document.createElement('img');
 		this.runIcon.style.height = '7.5vw';
@@ -176,6 +184,9 @@ class Game{
 		this.runIcon.style.filter = 'invert(100%)';
 		this.runIcon.style.userSelect = 'none';
 		this.runIcon.src = './assets/icons/run.svg';
+		this.runIcon.style.userDrag = 'none';
+		this.runIcon.style.userSelect = 'none';
+		this.runIcon.draggable = false;
 
 		
 		document.body.appendChild(game.graffitiButton);
@@ -198,10 +209,27 @@ class Game{
 				this.spray();
 			}, 20);
 		}, false);
+		this.sprayButton.addEventListener("touchstart", () => {
+			this.sprayTimer = setInterval(() => {
+				this.spray();
+			}, 20);
+		}, false);
 		this.sprayButton.addEventListener("mouseup", () => {
 			clearInterval(this.sprayTimer);
 		}, false);
-		
+		this.sprayButton.addEventListener("mouseout", () => {
+			clearInterval(this.sprayTimer);
+		}, false);
+		this.sprayButton.addEventListener("mouseleave", () => {
+			clearInterval(this.sprayTimer);
+		}, false);
+		this.sprayButton.addEventListener("touchcancel", () => {
+			clearInterval(this.sprayTimer);
+		}, false);
+		this.sprayButton.addEventListener("touchend", () => {
+			clearInterval(this.sprayTimer);
+		}, false);
+
 
 		window.addEventListener( 'resize', function(){ game.onWindowResize(); }, false );
 	}
