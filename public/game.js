@@ -244,6 +244,8 @@ class Game{
 				this.delayActionPause();
 
 				this.player.cameras.active = this.player.cameras.fps;
+				this.player.cameras.active.matrixAutoUpdate = false;
+
 			}
 		}
 	}
@@ -416,19 +418,24 @@ class Game{
 				this.player.move = { forward, turn }; 
 			}
 		} else {
-			
+			forward = -forward;
 			turn = -turn;
-			const worldDirPlayer = new THREE.Vector3();
-			this.player.object.getWorldDirection(worldDirPlayer).normalize().cross(new THREE.Vector3(0,1,0));
-			if (this.player.object.rotation.x >=-1 && this.player.object.rotation.x <= 1) {
-				this.player.object.rotateOnAxis(worldDirPlayer, forward/100);
-				if (this.player.object.rotation.x <-1) this.player.object.rotation.x = -1;
-				if (this.player.object.rotation.x >1) this.player.object.rotation.x = 1;
-			} else if (this.player.object.rotation.y >=-1 && this.player.object.rotation.y <= 1) {
-				this.player.object.rotateOnAxis(worldDirPlayer, forward/100);
-				if (this.player.object.rotation.y <-1) this.player.object.rotation.y = -1;
-				if (this.player.object.rotation.y >1) this.player.object.rotation.y = 1;
-			}
+			const mX = new THREE.Matrix4().makeRotationX(forward);
+			const mY = new THREE.Matrix4().makeRotationY(turn);
+			const m = new THREE.Matrix4().multiplyMatrices( mX, mY );
+
+			this.player.cameras.active.matrix.copy(m);
+
+			// if (this.player.object.rotation.x >=-1 && this.player.object.rotation.x <= 1) {
+			// 	// this.player.object.rotateOnAxis(worldDirPlayer, forward/100);
+			// 	// this.player.object.matrix.makeRotation
+			// 	if (this.player.object.rotation.x <-1) this.player.object.rotation.x = -1;
+			// 	if (this.player.object.rotation.x >1) this.player.object.rotation.x = 1;
+			// } else if (this.player.object.rotation.y >=-1 && this.player.object.rotation.y <= 1) {
+			// 	// this.player.object.rotateOnAxis(worldDirPlayer, forward/100);
+			// 	if (this.player.object.rotation.y <-1) this.player.object.rotation.y = -1;
+			// 	if (this.player.object.rotation.y >1) this.player.object.rotation.y = 1;
+			// }
 			
 			// console.log(this.player.object.rotation.x, this.player.object.rotation.y, this.player.object.rotation.z, forward);
 		}
@@ -499,7 +506,7 @@ class Game{
 		
 		if (this.player.sprayMarkings) {
 			this.player.sprayMarkings.map(async (value, index, arr) => {
-				value.translateOnAxis(this.player.cameras.fpsCan.getWorldDirection(), 20);
+				value.translateOnAxis(this.player.cameras.fpsCan.getWorldDirection(new THREE.Vector3()), 20);
 			})
 		}
 		if (this.player.mixer!==undefined) this.player.mixer.update(dt);
