@@ -9,11 +9,10 @@ class Game{
 		this.camera;
 		this.scene;
 		this.renderer;
-		
 		this.container = document.createElement( 'div' );
 		this.container.style.height = '100%';
 		document.body.appendChild( this.container );
-        
+        this.sprayButtonPressed = false;
 		const game = this;
 		this.anims = ['Walking', 'Walking Backwards', 'Turn', 'Running', 'Pointing Gesture', 'Pointing'];
         
@@ -142,9 +141,9 @@ class Game{
 		this.graffitiButton.style.z = '0';
 		this.graffitiButton.style.position = 'absolute';
 		this.graffitiButton.style.left = '20px';
-		this.graffitiButton.style.top = '20px';
-		this.graffitiButton.style.width = '60px';
-		this.graffitiButton.style.height = '60px';
+		this.graffitiButton.style.top = '40px';
+		this.graffitiButton.style.width = '15vw';
+		this.graffitiButton.style.height = '15vw';
 		this.graffitiButton.style.borderRadius = '50%';
 		this.graffitiButton.style.outline = 'none';
 		this.graffitiButton.style.border = 'medium solid rgb(68, 68, 68)';
@@ -156,8 +155,8 @@ class Game{
 		this.sprayButton.style.position = 'absolute';
 		this.sprayButton.style.right = '20px';
 		this.sprayButton.style.bottom = '45px';
-		this.sprayButton.style.width = '60px';
-		this.sprayButton.style.height = '60px';
+		this.sprayButton.style.width = '15vw';
+		this.sprayButton.style.height = '15vw';
 		this.sprayButton.style.borderRadius = '50%';
 		this.sprayButton.style.outline = 'none';
 		this.sprayButton.style.border = 'medium solid rgb(68, 68, 68)';
@@ -165,15 +164,15 @@ class Game{
 
 
 		this.graffitiIcon = document.createElement('img');
-		this.graffitiIcon.style.height = '30px';
-		this.graffitiIcon.style.width = '30px';
+		this.graffitiIcon.style.height = '7.5vw';
+		this.graffitiIcon.style.width = '7.5vw';
 		this.graffitiIcon.style.filter = 'invert(100%)';
 		this.graffitiIcon.style.userSelect = 'none';
 		this.graffitiIcon.src = './assets/icons/spray.svg';
 
 		this.runIcon = document.createElement('img');
-		this.runIcon.style.height = '30px';
-		this.runIcon.style.width = '30px';
+		this.runIcon.style.height = '7.5vw';
+		this.runIcon.style.width = '7.5vw';
 		this.runIcon.style.filter = 'invert(100%)';
 		this.runIcon.style.userSelect = 'none';
 		this.runIcon.src = './assets/icons/run.svg';
@@ -194,6 +193,16 @@ class Game{
 		this.sprayButton.addEventListener("click", () => {
 			this.spray();
 		}, false);
+		this.sprayButton.addEventListener("mousedown", () => {
+			this.sprayTimer = setInterval(() => {
+				this.spray();
+			}, 20);
+		}, false);
+		this.sprayButton.addEventListener("mouseup", () => {
+			clearInterval(this.sprayTimer);
+		}, false);
+		
+
 		window.addEventListener( 'resize', function(){ game.onWindowResize(); }, false );
 	}
 	
@@ -211,6 +220,7 @@ class Game{
 				game.joystick = new JoyStick({
 					onMove: game.playerControl,
 					game: game,
+
 				});
 
 				delete game.anims;
@@ -480,7 +490,7 @@ class Game{
 		this.player.cameras = { front, back, wide, overhead, collect, fps, fpsFront, fpsCan, fpsMiddle };
 		this.player.cameras.active = this.player.cameras.back;
 	}
-	
+
 	spray() {
 		const geometry = new THREE.TetrahedronGeometry().scale(5, 5, 5);
 		const material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
