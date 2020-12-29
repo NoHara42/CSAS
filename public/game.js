@@ -74,8 +74,11 @@ class Game{
 				streetManObject.mixer = new THREE.AnimationMixer( streetManObject );
 				this.player.mixer = streetManObject.mixer;
 				this.player.root = streetManObject.mixer.getRoot();
-				this.player.sprayMarkings = new Array();
-				
+				this.player.inFlightSprayMarkings = new Array();
+				this.player.landedSprayMarkings = new Array();
+				this.player.nozzelCoeff = 5;
+				this.player.particleSpeed = 40;
+				this.player.sprayColourSelected = "#ff00ff";
 				streetManObject.name = "StreetMan";
 	
 				streetManObject.traverse( function ( child ) {
@@ -142,8 +145,9 @@ class Game{
 		this.graffitiButton.style.position = 'absolute';
 		this.graffitiButton.style.left = '20px';
 		this.graffitiButton.style.top = '40px';
-		this.graffitiButton.style.width = '15vw';
-		this.graffitiButton.style.height = '15vw';
+		this.graffitiButton.style.minWidth = '100px';
+		this.graffitiButton.style.minHeight = '100px';
+
 		this.graffitiButton.style.borderRadius = '50%';
 		this.graffitiButton.style.outline = 'none';
 		this.graffitiButton.style.border = 'medium solid rgb(68, 68, 68)';
@@ -157,8 +161,8 @@ class Game{
 		this.sprayButton.style.position = 'absolute';
 		this.sprayButton.style.right = '20px';
 		this.sprayButton.style.bottom = '45px';
-		this.sprayButton.style.width = '15vw';
-		this.sprayButton.style.height = '15vw';
+		this.sprayButton.style.minWidth = '100px';
+		this.sprayButton.style.minHeight = '100px';
 		this.sprayButton.style.borderRadius = '50%';
 		this.sprayButton.style.outline = 'none';
 		this.sprayButton.style.border = 'medium solid rgb(68, 68, 68)';
@@ -168,19 +172,19 @@ class Game{
 
 
 		this.graffitiIcon = document.createElement('img');
-		this.graffitiIcon.style.height = '7.5vw';
-		this.graffitiIcon.style.userDrag = 'none';
-		this.graffitiIcon.style.userSelect = 'none';
-
-		this.graffitiIcon.style.width = '7.5vw';
+		this.graffitiIcon.style.width = "50px";
+		this.graffitiIcon.style.height = "50px";
+		
 		this.graffitiIcon.style.filter = 'invert(100%)';
 		this.graffitiIcon.style.userSelect = 'none';
 		this.graffitiIcon.src = './assets/icons/spray.svg';
+		this.graffitiIcon.style.userDrag = 'none';
+		this.graffitiIcon.style.userSelect = 'none';
 		this.graffitiIcon.draggable = false;
 
 		this.runIcon = document.createElement('img');
-		this.runIcon.style.height = '7.5vw';
-		this.runIcon.style.width = '7.5vw';
+		this.runIcon.style.width = "50px";
+		this.runIcon.style.height = "50px";
 		this.runIcon.style.filter = 'invert(100%)';
 		this.runIcon.style.userSelect = 'none';
 		this.runIcon.src = './assets/icons/run.svg';
@@ -459,6 +463,7 @@ class Game{
 		} else {
 			forward = -forward;
 			turn = -turn;
+
 			const mX = new THREE.Matrix4().makeRotationX(forward);
 			const mY = new THREE.Matrix4().makeRotationY(turn);
 			const m = new THREE.Matrix4().multiplyMatrices( mX, mY );
@@ -508,19 +513,40 @@ class Game{
 	}
 
 	spray() {
-		const geometry = new THREE.TetrahedronGeometry().scale(5, 5, 5);
-		const material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
-		const marking = new THREE.Mesh( geometry, material );
-		const worldPosCan = new THREE.Vector3();
+		let geometry1 = new THREE.TetrahedronGeometry().scale(5, 5, 5);
+		let geometry2 = new THREE.SphereGeometry().scale(5, 5, 5);
+		let geometry3 = new THREE.DodecahedronGeometry().scale(5, 5, 5);
+		let material = new THREE.MeshBasicMaterial( {color: this.player.sprayColourSelected} );
+		let marking = new THREE.Mesh();
+		marking.material = material;
+
+		//random geometry selection
+		let tempRandomDecimal = Math.random();
+		if (tempRandomDecimal <= 0.33) {
+			marking.geometry = geometry1;
+		} else if (tempRandomDecimal > 0.33 && tempRandomDecimal <= 0.66){
+			marking.geometry = geometry2;
+		} else {
+			marking.geometry = geometry3;
+		}
 		
+		let worldPosCan = new THREE.Vector3();
+		let worldDirCan = new THREE.Vector3();
+		
+		//sets the position of the marker
 		this.player.cameras.fpsCan.getWorldPosition(worldPosCan);
 		marking.position.set(worldPosCan.x, worldPosCan.y, worldPosCan.z);
-		//TODO:
-		// const raycaster = new Raycaster(marking.position);
-	
-		this.player.sprayMarkings.push(marking);
+		
+		// Creates a raycaster for every marking
+		let raycaster = new THREE.Raycaster(marking.position, worldDirCan);
+		this.player.cameras.active.getWorldDirection(worldDirCan);
+		marking.raycaster = raycaster;
+		
+		//adds the marker to the sprayMarkings array where it is translated on the active camera axis
+		this.player.inFlightSprayMarkings.push(marking);
 		this.scene.add(marking);
-		console.log(this.player.sprayMarkings);
+
+		// console.log(this.player.sprayMarkings);
 		
 	}
 
@@ -530,9 +556,37 @@ class Game{
 		
 		requestAnimationFrame( () => { game.animate(); } );
 		
-		if (this.player.sprayMarkings) {
-			this.player.sprayMarkings.map(async (value, index, arr) => {
-				value.translateOnAxis(this.player.cameras.fpsCan.getWorldDirection(new THREE.Vector3()), 20);
+		if (this.player.inFlightSprayMarkings) {
+			this.player.inFlightSprayMarkings.map(async (value, index, arr) => {
+				if(value != undefined) {
+					let intersect = value.raycaster.intersectObjects(this.colliders);
+					if (intersect.length > 0 && intersect[0].distance < 80) {
+
+						//this make a final spray particle translation to ensure it sticks to the wall
+						value.translateOnAxis(value.sprayDirection, intersect[0].distance);
+
+						//for performance reasons the markers, after they have hit the object should
+						//be removed from the inFlightSprayMarkings array 
+						delete arr[index]
+
+						this.player.landedSprayMarkings.push(value);
+	
+					} else {
+						let playerDirection = new THREE.Vector3();
+						if(value.sprayDirection) {
+							value.translateOnAxis(value.sprayDirection, this.player.particleSpeed);
+						} else {
+							this.player.cameras.fpsCan.getWorldDirection(playerDirection);
+							//randomises the direction of the graffiti spray marker
+							playerDirection.x += (Math.random() - 0.5) / this.player.nozzelCoeff;
+							playerDirection.y += (Math.random() - 0.5) / this.player.nozzelCoeff;
+							playerDirection.z += (Math.random() - 0.5) / this.player.nozzelCoeff;
+							value.sprayDirection = playerDirection;
+							value.translateOnAxis(value.sprayDirection, this.player.particleSpeed);
+						}
+
+					}
+				}
 			})
 		}
 		if (this.player.mixer!==undefined) this.player.mixer.update(dt);
