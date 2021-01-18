@@ -154,6 +154,7 @@ class Game{
 		this.graffitiButton.style.background = 'rgba(126, 126, 126, 0.5)';
 		this.graffitiButton.style.userDrag = 'none';
 		this.graffitiButton.style.userSelect = 'none';
+		this.graffitiButton.style.pointerEvents = 'none';
 
 		this.sprayButton = document.createElement('button');
 		this.sprayButton.id = 'grafButton'
@@ -169,6 +170,7 @@ class Game{
 		this.sprayButton.style.background = 'rgba(126, 126, 126, 0.5)';
 		this.sprayButton.style.userDrag = 'none';
 		this.sprayButton.style.userSelect = 'none';
+		this.sprayButton.style.pointerEvents = 'none';
 
 
 		this.graffitiIcon = document.createElement('img');
@@ -181,6 +183,7 @@ class Game{
 		this.graffitiIcon.style.userDrag = 'none';
 		this.graffitiIcon.style.userSelect = 'none';
 		this.graffitiIcon.draggable = false;
+		this.graffitiIcon.style.pointerEvents = 'none';
 
 		this.runIcon = document.createElement('img');
 		this.runIcon.style.width = "50px";
@@ -191,6 +194,7 @@ class Game{
 		this.runIcon.style.userDrag = 'none';
 		this.runIcon.style.userSelect = 'none';
 		this.runIcon.draggable = false;
+		this.runIcon.style.pointerEvents = 'none';
 
 		
 		document.body.appendChild(game.graffitiButton);
