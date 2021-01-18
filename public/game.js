@@ -157,7 +157,7 @@ class Game{
 
 
 		this.sprayButton = document.createElement('button');
-		this.sprayButton.id = 'grafButton'
+		this.sprayButton.id = 'sprayButton'
 		this.sprayButton.style.z = '0';
 		this.sprayButton.style.position = 'absolute';
 		this.sprayButton.style.right = '20px';
@@ -171,11 +171,44 @@ class Game{
 		this.sprayButton.style.userDrag = 'none';
 		this.sprayButton.style.userSelect = 'none';
 
+		this.sprayIcon = document.createElement('img');
+		this.sprayIcon.style.width = "50px";
+		this.sprayIcon.style.height = "50px";
+		this.sprayIcon.style.filter = 'invert(100%)';
+		this.sprayIcon.style.userSelect = 'none';
+		this.sprayIcon.src = './assets/icons/spray.svg';
+		this.sprayIcon.style.userDrag = 'none';
+		this.sprayIcon.style.userSelect = 'none';
+		this.sprayIcon.draggable = false;
+
+		this.colorPickerButton = document.createElement('button');
+		this.colorPickerButton.id = 'colorPickerButton'
+		this.colorPickerButton.style.z = '0';
+		this.colorPickerButton.style.position = 'absolute';
+		this.colorPickerButton.style.right = '40px';
+		this.colorPickerButton.style.top = '60px';
+		this.colorPickerButton.style.minWidth = '50px';
+		this.colorPickerButton.style.minHeight = '50px';
+		this.colorPickerButton.style.borderRadius = '10%';
+		this.colorPickerButton.style.outline = 'none';
+		this.colorPickerButton.style.border = 'medium solid rgb(68, 68, 68)';
+		this.colorPickerButton.style.background = 'rgba(126, 126, 126, 0.5)';
+		this.colorPickerButton.style.userDrag = 'none';
+		this.colorPickerButton.style.userSelect = 'none';
+
+		this.colorPickerIcon = document.createElement('img');
+		this.colorPickerIcon.id = "colorPickerIcon";		
+		this.colorPickerIcon.style.width = "50px";
+		this.colorPickerIcon.style.height = "50px";
+		this.colorPickerIcon.style.filter = 'invert(100%)';
+		this.colorPickerIcon.style.userSelect = 'none';
+		this.colorPickerIcon.style.userDrag = 'none';
+		this.colorPickerIcon.style.userSelect = 'none';
+		this.colorPickerIcon.draggable = false;
 
 		this.graffitiIcon = document.createElement('img');
 		this.graffitiIcon.style.width = "50px";
 		this.graffitiIcon.style.height = "50px";
-		
 		this.graffitiIcon.style.filter = 'invert(100%)';
 		this.graffitiIcon.style.userSelect = 'none';
 		this.graffitiIcon.src = './assets/icons/spray.svg';
@@ -193,58 +226,62 @@ class Game{
 		this.runIcon.style.userSelect = 'none';
 		this.runIcon.draggable = false;
 
-		// Simple example, see optional options for more configuration.
-		// const pickr = Pickr.create({
-		// 	el: '.color-picker',
-		// 	theme: 'nano', // or 'monolith', or 'nano'
-		// 	swatches: [
-		// 		'rgba(244, 67, 54, 1)',
-		// 		'rgba(233, 30, 99, 0.95)',
-		// 		'rgba(156, 39, 176, 0.9)',
-		// 		'rgba(103, 58, 183, 0.85)',
-		// 		'rgba(63, 81, 181, 0.8)',
-		// 		'rgba(33, 150, 243, 0.75)',
-		// 		'rgba(3, 169, 244, 0.7)',
-		// 		'rgba(0, 188, 212, 0.7)',
-		// 		'rgba(0, 150, 136, 0.75)',
-		// 		'rgba(76, 175, 80, 0.8)',
-		// 		'rgba(139, 195, 74, 0.85)',
-		// 		'rgba(205, 220, 57, 0.9)',
-		// 		'rgba(255, 235, 59, 0.95)',
-		// 		'rgba(255, 193, 7, 1)'
-		// 	],
-
-		// 	components: {
-
-		// 		// Main components
-		// 		preview: true,
-		// 		opacity: false,
-		// 		hue: true,
-
-		// 		// Input / output Options
-		// 		interaction: {
-		// 			hex: true,
-		// 			rgba: true,
-		// 			hsla: true,
-		// 			hsva: true,
-		// 			cmyk: true,
-		// 			input: true,
-		// 			clear: true,
-		// 			save: true
-		// 		}
-		// 	}
-		// });
-		
 		document.body.appendChild(game.graffitiButton);
+		document.body.appendChild(game.sprayButton);
+		document.body.appendChild(game.colorPickerButton);
 		this.graffitiButton.appendChild(game.graffitiIcon);
+		this.graffitiButton.appendChild(game.runIcon);
+		this.sprayButton.appendChild(game.sprayIcon);
+		this.graffitiIcon.style.display = 'inline';
+		this.runIcon.style.display = 'none';
+		this.colorPickerButton.style.visibility = 'hidden';
+		this.colorPickerIcon.style.visibility = 'hidden';
+		this.sprayButton.style.visibility = 'hidden';
+
+		this.colorPickerButton.appendChild(game.colorPickerIcon);
+		
+		//init color picker
+		this.pickr = Pickr.create({
+			el: this.colorPickerIcon,
+			theme: 'nano', // or 'monolith', or 'nano'
+			comparison: false,
+			components: {
+
+				// Main components
+				preview: true,
+				opacity: false,
+				hue: true,
+
+				// Input / output Options
+				interaction: {
+					hex: false,
+					rgba: false,
+					hsla: false,
+					hsva: false,
+					cmyk: false,
+					input: false,
+					clear: false,
+					save: false
+				}
+			}
+		});
+
+		//switching between spray mode and run mode
 		this.graffitiButton.addEventListener("click", () => {
 			this.changePerspective();
 			this.changeButtonIcon();
 			if (this.player.spraying) {
-				document.body.appendChild(game.sprayButton);
-				this.sprayButton.appendChild(game.graffitiIcon);
+				this.sprayButton.style.visibility = 'visible';
+				this.sprayIcon.style.visibility = 'visible';
+				this.colorPickerButton.style.visibility = 'visible';
+				this.colorPickerIcon.style.visibility = 'visible';
+
 			} else {
-				document.body.removeChild(game.sprayButton);
+				this.sprayButton.style.visibility = 'hidden';
+				this.sprayIcon.style.visibility = 'hidden';
+				this.colorPickerButton.style.visibility = 'hidden';
+				this.colorPickerIcon.style.visibility = 'hidden';
+
 			}
 		}, false);
 		this.sprayButton.addEventListener("click", () => {
@@ -275,6 +312,9 @@ class Game{
 		this.sprayButton.addEventListener("touchend", () => {
 			clearInterval(this.sprayTimer);
 		}, false);
+		this.pickr.on('change', instance => {
+			this.player.sprayColourSelected = this.pickr.getColor().toHEXA().toString();
+		})
 
 
 		window.addEventListener( 'resize', function(){ game.onWindowResize(); }, false );
@@ -305,12 +345,13 @@ class Game{
 	}
 
 	changeButtonIcon() {
-		if (this.graffitiButton.contains(this.graffitiIcon)) {
-			this.graffitiButton.removeChild(this.graffitiIcon);
-			this.graffitiButton.appendChild(this.runIcon);
+		if (this.runIcon.style.display == 'none') {
+			this.graffitiIcon.style.display = 'none';
+			this.runIcon.style.display = 'inline';
+
 		} else {
-			this.graffitiButton.removeChild(this.runIcon);
-			this.graffitiButton.appendChild(this.graffitiIcon);
+			this.graffitiIcon.style.display = 'inline';
+			this.runIcon.style.display = 'none';
 		}
 	}
 
