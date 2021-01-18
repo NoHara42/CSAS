@@ -77,7 +77,7 @@ class Game{
 				this.player.inFlightSprayMarkings = new Array();
 				this.player.landedSprayMarkings = new Array();
 				this.player.nozzelCoeff = 5;
-				this.player.particleSpeed = 40;
+				this.player.particleSpeed = 80;
 				this.player.sprayColourSelected = "#ff00ff";
 				streetManObject.name = "StreetMan";
 	
@@ -560,7 +560,7 @@ class Game{
 			this.player.inFlightSprayMarkings.map(async (value, index, arr) => {
 				if(value != undefined) {
 					let intersect = value.raycaster.intersectObjects(this.colliders);
-					if (intersect.length > 0 && intersect[0].distance < 80) {
+					if (intersect.length > 0 && intersect[0].distance < (this.player.particleSpeed * 2)) {
 
 						//this make a final spray particle translation to ensure it sticks to the wall
 						value.translateOnAxis(value.sprayDirection, intersect[0].distance);
