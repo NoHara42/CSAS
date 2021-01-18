@@ -3,6 +3,8 @@
   <head>
     <title>CSAS - Collaborative Street Art Simulator</title>
     <link rel="stylesheet" href="/stylesheets/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"/> <!-- 'nano' theme -->
+
   </head>
 
   <body>
@@ -14,8 +16,14 @@
     <script src="./javascripts/Detector.js"></script>
     <script src="./javascripts/toon3d.js"></script>
     <script src="./javascripts/WebGL.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+
 
     <script type="module">
+      $(document).on("contextmenu",function(){
+        return false;
+      }); 
 
       // Checks if browser supports WebGL, shows error if not.
       if ( WEBGL.isWebGLAvailable() ) {
