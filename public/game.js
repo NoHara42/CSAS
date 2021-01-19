@@ -62,8 +62,6 @@ class Game{
 		grid.material.transparent = true;
 		this.scene.add( grid );
 
-		// model
-		const game = this;
 		this.loader = new THREE.FBXLoader();
 
 		try {
@@ -89,7 +87,7 @@ class Game{
 				} );
 				
 				const tLoader = new THREE.TextureLoader();
-				tLoader.load(`${game.assetsPath}images/SimplePeople_StreetMan_White.png`, function(texture){
+				tLoader.load(`${this.assetsPath}images/SimplePeople_StreetMan_White.png`, function(texture){
 					streetManObject.traverse( function ( child ) {
 						if ( child.isMesh ){
 							child.material.map = texture;
@@ -114,7 +112,7 @@ class Game{
 					}
 				} );
 				
-				tLoader.load(`${game.assetsPath}images/GraffitiLable.png`, (texture) => {
+				tLoader.load(`${this.assetsPath}images/GraffitiLable.png`, (texture) => {
 					console.log("SprayCan Texture loaded.");
 					sprayCanObject.traverse(( child ) => {
 						if ( child.isMesh ){
@@ -139,37 +137,51 @@ class Game{
 		this.renderer.shadowMap.enabled = true;
 		this.container.appendChild( this.renderer.domElement );
 
-		this.graffitiButton = document.createElement('button');
-		this.graffitiButton.id = 'grafButton'
-		this.graffitiButton.style.z = '0';
-		this.graffitiButton.style.position = 'absolute';
-		this.graffitiButton.style.left = '20px';
-		this.graffitiButton.style.top = '40px';
-		this.graffitiButton.style.minWidth = '100px';
-		this.graffitiButton.style.minHeight = '100px';
-
-		this.graffitiButton.style.borderRadius = '50%';
-		this.graffitiButton.style.outline = 'none';
-		this.graffitiButton.style.border = 'medium solid rgb(68, 68, 68)';
-		this.graffitiButton.style.background = 'rgba(126, 126, 126, 0.5)';
-		this.graffitiButton.style.userDrag = 'none';
-		this.graffitiButton.style.userSelect = 'none';
+		this.nippleContainer = document.createElement('div');
+		this.nippleContainer.id = 'nippleButton'
+		this.nippleContainer.style.z = '0';
+		// this.nippleContainer.style.display = 'none';
+		this.nippleContainer.style.position = 'absolute';
+		this.nippleContainer.style.left = '20px';
+		this.nippleContainer.style.bottom = '40px';
+		this.nippleContainer.style.minWidth = '150px';
+		this.nippleContainer.style.minHeight = '150px';
+		this.nippleContainer.style.borderRadius = '50%';
+		this.nippleContainer.style.outline = 'none';
+		this.nippleContainer.style.border = 'medium solid rgb(68, 68, 68)';
+		this.nippleContainer.style.background = 'rgba(126, 126, 126, 0.5)';
 
 
-		this.sprayButton = document.createElement('button');
-		this.sprayButton.id = 'sprayButton'
-		this.sprayButton.style.z = '0';
-		this.sprayButton.style.position = 'absolute';
-		this.sprayButton.style.right = '20px';
-		this.sprayButton.style.bottom = '45px';
-		this.sprayButton.style.minWidth = '100px';
-		this.sprayButton.style.minHeight = '100px';
-		this.sprayButton.style.borderRadius = '50%';
-		this.sprayButton.style.outline = 'none';
-		this.sprayButton.style.border = 'medium solid rgb(68, 68, 68)';
-		this.sprayButton.style.background = 'rgba(126, 126, 126, 0.5)';
-		this.sprayButton.style.userDrag = 'none';
-		this.sprayButton.style.userSelect = 'none';
+		this.grafModeIconContainer = document.createElement('button');
+		this.grafModeIconContainer.id = 'grafButton'
+		this.grafModeIconContainer.style.z = '0';
+		this.grafModeIconContainer.style.position = 'absolute';
+		this.grafModeIconContainer.style.left = '20px';
+		this.grafModeIconContainer.style.top = '40px';
+		this.grafModeIconContainer.style.minWidth = '100px';
+		this.grafModeIconContainer.style.minHeight = '100px';
+		this.grafModeIconContainer.style.borderRadius = '50%';
+		this.grafModeIconContainer.style.outline = 'none';
+		this.grafModeIconContainer.style.border = 'medium solid rgb(68, 68, 68)';
+		this.grafModeIconContainer.style.background = 'rgba(126, 126, 126, 0.5)';
+		this.grafModeIconContainer.style.userDrag = 'none';
+		this.grafModeIconContainer.style.userSelect = 'none';
+
+
+		this.sprayActionIconContainer = document.createElement('button');
+		this.sprayActionIconContainer.id = 'sprayButton'
+		this.sprayActionIconContainer.style.z = '0';
+		this.sprayActionIconContainer.style.position = 'absolute';
+		this.sprayActionIconContainer.style.right = '20px';
+		this.sprayActionIconContainer.style.bottom = '45px';
+		this.sprayActionIconContainer.style.minWidth = '100px';
+		this.sprayActionIconContainer.style.minHeight = '100px';
+		this.sprayActionIconContainer.style.borderRadius = '50%';
+		this.sprayActionIconContainer.style.outline = 'none';
+		this.sprayActionIconContainer.style.border = 'medium solid rgb(68, 68, 68)';
+		this.sprayActionIconContainer.style.background = 'rgba(126, 126, 126, 0.5)';
+		this.sprayActionIconContainer.style.userDrag = 'none';
+		this.sprayActionIconContainer.style.userSelect = 'none';
 
 		this.sprayIcon = document.createElement('img');
 		this.sprayIcon.style.width = "50px";
@@ -181,20 +193,20 @@ class Game{
 		this.sprayIcon.style.userSelect = 'none';
 		this.sprayIcon.draggable = false;
 
-		this.colorPickerButton = document.createElement('button');
-		this.colorPickerButton.id = 'colorPickerButton'
-		this.colorPickerButton.style.z = '0';
-		this.colorPickerButton.style.position = 'absolute';
-		this.colorPickerButton.style.right = '40px';
-		this.colorPickerButton.style.top = '60px';
-		this.colorPickerButton.style.minWidth = '50px';
-		this.colorPickerButton.style.minHeight = '50px';
-		this.colorPickerButton.style.borderRadius = '10%';
-		this.colorPickerButton.style.outline = 'none';
-		this.colorPickerButton.style.border = 'medium solid rgb(68, 68, 68)';
-		this.colorPickerButton.style.background = 'rgba(126, 126, 126, 0.5)';
-		this.colorPickerButton.style.userDrag = 'none';
-		this.colorPickerButton.style.userSelect = 'none';
+		this.colorPickerIconContainer = document.createElement('button');
+		this.colorPickerIconContainer.id = 'colorPickerButton'
+		this.colorPickerIconContainer.style.z = '0';
+		this.colorPickerIconContainer.style.position = 'absolute';
+		this.colorPickerIconContainer.style.right = '40px';
+		this.colorPickerIconContainer.style.top = '60px';
+		this.colorPickerIconContainer.style.minWidth = '50px';
+		this.colorPickerIconContainer.style.minHeight = '50px';
+		this.colorPickerIconContainer.style.borderRadius = '10%';
+		this.colorPickerIconContainer.style.outline = 'none';
+		this.colorPickerIconContainer.style.border = 'medium solid rgb(68, 68, 68)';
+		this.colorPickerIconContainer.style.background = 'rgba(126, 126, 126, 0.5)';
+		this.colorPickerIconContainer.style.userDrag = 'none';
+		this.colorPickerIconContainer.style.userSelect = 'none';
 
 		this.colorPickerIcon = document.createElement('img');
 		this.colorPickerIcon.id = "colorPickerIcon";		
@@ -226,23 +238,27 @@ class Game{
 		this.runIcon.style.userSelect = 'none';
 		this.runIcon.draggable = false;
 
-		document.body.appendChild(game.graffitiButton);
-		document.body.appendChild(game.sprayButton);
-		document.body.appendChild(game.colorPickerButton);
-		this.graffitiButton.appendChild(game.graffitiIcon);
-		this.graffitiButton.appendChild(game.runIcon);
-		this.sprayButton.appendChild(game.sprayIcon);
+		document.body.appendChild(this.nippleContainer);
+		document.body.appendChild(this.grafModeIconContainer);
+		document.body.appendChild(this.sprayActionIconContainer);
+		document.body.appendChild(this.colorPickerIconContainer);
+		this.grafModeIconContainer.appendChild(this.graffitiIcon);
+		this.grafModeIconContainer.appendChild(this.runIcon);
+		this.sprayActionIconContainer.appendChild(this.sprayIcon);
+
 		this.graffitiIcon.style.display = 'inline';
 		this.runIcon.style.display = 'none';
-		this.colorPickerButton.style.visibility = 'hidden';
+		this.colorPickerIconContainer.style.visibility = 'hidden';
 		this.colorPickerIcon.style.visibility = 'hidden';
-		this.sprayButton.style.visibility = 'hidden';
+		this.sprayActionIconContainer.style.visibility = 'hidden';
 
-		this.colorPickerButton.appendChild(game.colorPickerIcon);
+		this.colorPickerIconContainer.appendChild(this.colorPickerIcon);
 		
 		//init color picker
 		this.pickr = Pickr.create({
 			el: this.colorPickerIcon,
+			default: "#ff00ff",
+			defaultRepresentation: 'HEX',
 			theme: 'nano', // or 'monolith', or 'nano'
 			comparison: false,
 			components: {
@@ -267,79 +283,87 @@ class Game{
 		});
 
 		//switching between spray mode and run mode
-		this.graffitiButton.addEventListener("click", () => {
+		this.grafModeIconContainer.addEventListener("click", () => {
 			this.changePerspective();
 			this.changeButtonIcon();
 			if (this.player.spraying) {
-				this.sprayButton.style.visibility = 'visible';
+				this.sprayActionIconContainer.style.visibility = 'visible';
 				this.sprayIcon.style.visibility = 'visible';
-				this.colorPickerButton.style.visibility = 'visible';
+				this.colorPickerIconContainer.style.visibility = 'visible';
 				this.colorPickerIcon.style.visibility = 'visible';
 
 			} else {
-				this.sprayButton.style.visibility = 'hidden';
+				this.sprayActionIconContainer.style.visibility = 'hidden';
 				this.sprayIcon.style.visibility = 'hidden';
-				this.colorPickerButton.style.visibility = 'hidden';
+				this.colorPickerIconContainer.style.visibility = 'hidden';
 				this.colorPickerIcon.style.visibility = 'hidden';
 
 			}
 		}, false);
-		this.sprayButton.addEventListener("click", () => {
+		this.sprayActionIconContainer.addEventListener("click", () => {
 			this.spray();
 		}, false);
-		this.sprayButton.addEventListener("mousedown", () => {
+		this.sprayActionIconContainer.addEventListener("mousedown", () => {
 			this.sprayTimer = setInterval(() => {
 				this.spray();
 			}, 20);
 		}, false);
-		this.sprayButton.addEventListener("touchstart", () => {
+		this.sprayActionIconContainer.addEventListener("touchstart", () => {
 			this.sprayTimer = setInterval(() => {
 				this.spray();
 			}, 20);
 		}, false);
-		this.sprayButton.addEventListener("mouseup", () => {
+		this.sprayActionIconContainer.addEventListener("mouseup", () => {
 			clearInterval(this.sprayTimer);
 		}, false);
-		this.sprayButton.addEventListener("mouseout", () => {
+		this.sprayActionIconContainer.addEventListener("mouseout", () => {
 			clearInterval(this.sprayTimer);
 		}, false);
-		this.sprayButton.addEventListener("mouseleave", () => {
+		this.sprayActionIconContainer.addEventListener("mouseleave", () => {
 			clearInterval(this.sprayTimer);
 		}, false);
-		this.sprayButton.addEventListener("touchcancel", () => {
+		this.sprayActionIconContainer.addEventListener("touchcancel", () => {
 			clearInterval(this.sprayTimer);
 		}, false);
-		this.sprayButton.addEventListener("touchend", () => {
+		this.sprayActionIconContainer.addEventListener("touchend", () => {
 			clearInterval(this.sprayTimer);
 		}, false);
 		this.pickr.on('change', instance => {
 			this.player.sprayColourSelected = this.pickr.getColor().toHEXA().toString();
-		})
+		});
 
 
-		window.addEventListener( 'resize', function(){ game.onWindowResize(); }, false );
+		window.addEventListener( 'resize', function(){ this.onWindowResize(); }, false );
 	}
 	
 	
     loadNextAnim(){
 		let anim = this.anims.pop();
-		const game = this;
 		this.loader.load( `${this.assetsPath}anims/${anim}.fbx`, ( object ) => {
-			game.animations[anim] = object.animations[0];
-			if (game.anims.length>0){
-				game.loadNextAnim();
+			this.animations[anim] = object.animations[0];
+			if (this.anims.length>0){
+				this.loadNextAnim();
 			}else{
-				game.createCameras();
-				game.createColliders();
-				game.joystick = new JoyStick({
-					onMove: game.playerControl,
-					game: game,
-
+				this.createCameras();
+				this.createColliders();
+				this.joystick = nipplejs.create({
+					zone: this.nippleContainer,
+					mode: 'static',
+					position: {left: '50%', top: '50%'},
+					dynamicPage: true,
+					size: 100,
 				});
+				this.joystick.on('move', (moveData) => {
+					this.playerControl(-moveData.target.nipples[0].frontPosition.y / 50, moveData.target.nipples[0].frontPosition.x / 50);
+				});
+				this.joystick.on('end', (moveData) => {
+					this.playerControl(0, 0);
+				});
+				
 
-				delete game.anims;
-				game.action = "Idle";
-				game.animate();
+				delete this.anims;
+				this.action = "Idle";
+				this.animate();
 			}
 		});	
 	}
