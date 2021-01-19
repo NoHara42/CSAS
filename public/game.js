@@ -57,7 +57,7 @@ class Game{
 		mesh.receiveShadow = true;
 		this.scene.add( mesh );
 
-		var grid = new THREE.GridHelper( 5000, 40, 0x000000, 0x000000 );
+		var grid = new THREE.GridHelper( 10000, 40, 0x000000, 0x000000 );
 		grid.material.opacity = 0.2;
 		grid.material.transparent = true;
 		this.scene.add( grid );
@@ -445,16 +445,16 @@ class Game{
 	}
     
     createColliders(){
-        const geometry = new THREE.BoxGeometry(500, 400, 500);
-        const material = new THREE.MeshBasicMaterial({color:0x222222, wireframe:true});
+        const geometry = new THREE.BoxGeometry(1000, 2000, 1000);
+        const material = new THREE.MeshPhysicalMaterial({color:"#555555"});
         
         this.colliders = [];
         
-        for (let x=-5000; x<5000; x+=1000){
-            for (let z=-5000; z<5000; z+=1000){
+        for (let x=-20000; x<20000; x+=2000){
+            for (let z=-20000; z<20000; z+=2000){
                 if (x==0 && z==0) continue;
                 const box = new THREE.Mesh(geometry, material);
-                box.position.set(x, 250, z);
+                box.position.set(x, 1000, z);
                 this.scene.add(box);
                 this.colliders.push(box);
             }
