@@ -137,10 +137,18 @@ class Game{
 		this.renderer.shadowMap.enabled = true;
 		this.container.appendChild( this.renderer.domElement );
 
+
+		this.sliderPolyfillContainer = document.createElement('div');
+		this.sliderPolyfillContainer.id = 'sliderPolyfillContainer';
+
+		this.sliderPolyfill = document.createElement('input');
+		this.sliderPolyfill.id = 'sliderPolyfill';
+		this.sliderPolyfill.type = 'range';
+
+
 		this.nippleContainer = document.createElement('div');
 		this.nippleContainer.id = 'nippleButton'
 		this.nippleContainer.style.z = '0';
-		// this.nippleContainer.style.display = 'none';
 		this.nippleContainer.style.position = 'absolute';
 		this.nippleContainer.style.left = '20px';
 		this.nippleContainer.style.bottom = '40px';
@@ -150,7 +158,6 @@ class Game{
 		this.nippleContainer.style.outline = 'none';
 		this.nippleContainer.style.border = 'medium solid rgb(68, 68, 68)';
 		this.nippleContainer.style.background = 'rgba(126, 126, 126, 0.5)';
-
 
 		this.grafModeIconContainer = document.createElement('button');
 		this.grafModeIconContainer.id = 'grafButton'
@@ -242,10 +249,13 @@ class Game{
 		document.body.appendChild(this.grafModeIconContainer);
 		document.body.appendChild(this.sprayActionIconContainer);
 		document.body.appendChild(this.colorPickerIconContainer);
+		document.body.appendChild(this.sliderPolyfillContainer);
+		this.sliderPolyfillContainer.appendChild(this.sliderPolyfill);
 		this.grafModeIconContainer.appendChild(this.graffitiIcon);
 		this.grafModeIconContainer.appendChild(this.runIcon);
 		this.sprayActionIconContainer.appendChild(this.sprayIcon);
 
+		this.sliderPolyfillContainer.style.visibility = 'hidden';
 		this.graffitiIcon.style.display = 'inline';
 		this.runIcon.style.display = 'none';
 		this.colorPickerIconContainer.style.visibility = 'hidden';
@@ -253,7 +263,34 @@ class Game{
 		this.sprayActionIconContainer.style.visibility = 'hidden';
 
 		this.colorPickerIconContainer.appendChild(this.colorPickerIcon);
-		
+
+		//init slider
+		this.slider = rangeSlider.create(this.sliderPolyfill, {
+			polyfill: true,     // Boolean, if true, custom markup will be created
+			root: document,
+			rangeClass: 'rangeSlider',
+			disabledClass: 'rangeSlider--disabled',
+			bufferClass: 'rangeSlider__buffer',
+			fillClass: 'rangeSlider__fill',
+			handleClass: 'rangeSlider__handle',
+			startEvent: ['mousedown', 'touchstart', 'pointerdown'],
+			moveEvent: ['mousemove', 'touchmove', 'pointermove'],
+			endEvent: ['mouseup', 'touchend', 'pointerup'],
+			vertical: true,    // Boolean, if true slider will be displayed in vertical orientation
+			min: 0,          // Number, 0
+			max: 30,          // Number, 100
+			step: 1,         // Number, 1
+			value: 15,        // Number, center of slider
+			buffer: null,       // Number, in percent, 0 by default
+			stick: null,        // [Number stickTo, Number stickRadius] : use it if handle should stick to ${stickTo}-th value in ${stickRadius}
+			borderRadius: 10,   // Number, if you're using buffer + border-radius in css
+
+			onSlide: (position, value) => {
+				console.log('onSlide', 'position: ' + position, 'value: ' + value);
+				this.player.nozzelCoeff = position;
+			}
+		});
+
 		//init color picker
 		this.pickr = Pickr.create({
 			el: this.colorPickerIcon,
@@ -287,12 +324,14 @@ class Game{
 			this.changePerspective();
 			this.changeButtonIcon();
 			if (this.player.spraying) {
+				this.sliderPolyfillContainer.style.visibility = 'visible';
 				this.sprayActionIconContainer.style.visibility = 'visible';
 				this.sprayIcon.style.visibility = 'visible';
 				this.colorPickerIconContainer.style.visibility = 'visible';
 				this.colorPickerIcon.style.visibility = 'visible';
 
 			} else {
+				this.sliderPolyfillContainer.style.visibility = 'hidden';
 				this.sprayActionIconContainer.style.visibility = 'hidden';
 				this.sprayIcon.style.visibility = 'hidden';
 				this.colorPickerIconContainer.style.visibility = 'hidden';
@@ -329,7 +368,13 @@ class Game{
 			clearInterval(this.sprayTimer);
 		}, false);
 		this.pickr.on('change', instance => {
-			this.player.sprayColourSelected = this.pickr.getColor().toHEXA().toString();
+			let hexColour = this.pickr.getColor().toHEXA().toString();
+			this.player.sprayColourSelected = hexColour;
+			
+			//replaces the background color with the selected color in the range-slider stylesheet 
+			let sheet = new CSSStyleSheet();
+			sheet.replaceSync(".rangeSlider {background:"+hexColour+" !important;position: absolute;}");
+			document.adoptedStyleSheets = [sheet];
 		});
 
 
@@ -359,7 +404,6 @@ class Game{
 				this.joystick.on('end', (moveData) => {
 					this.playerControl(0, 0);
 				});
-				
 
 				delete this.anims;
 				this.action = "Idle";
