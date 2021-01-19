@@ -277,7 +277,7 @@ class Game{
 			moveEvent: ['mousemove', 'touchmove', 'pointermove'],
 			endEvent: ['mouseup', 'touchend', 'pointerup'],
 			vertical: true,    // Boolean, if true slider will be displayed in vertical orientation
-			min: 1,          // Number, 0
+			min: 5,          // Number, 0
 			max: 30,          // Number, 100
 			step: 1,         // Number, 1
 			value: 15,        // Number, center of slider
