@@ -470,7 +470,6 @@ class Game{
 	}
 
 	dropCan(dt){
-		console.log("here");
 		const pos = this.player.sprayCan.position.clone();
 		let dir = new THREE.Vector3();
 		let raycaster = new THREE.Raycaster(pos, dir);
