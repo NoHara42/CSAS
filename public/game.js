@@ -57,8 +57,9 @@ class Game{
 		mesh.receiveShadow = true;
 		this.scene.add( mesh );
 
-		var grid = new THREE.GridHelper( 10000, 40, 0x000000, 0x000000 );
+		var grid = new THREE.GridHelper( 10000, 40, 0x22ff22, 0x22ff22,  );
 		grid.material.opacity = 0.2;
+		grid.material.colorWrite
 		grid.material.transparent = true;
 		this.scene.add( grid );
 
@@ -96,6 +97,7 @@ class Game{
 				});
 				
 				this.player.object = new THREE.Object3D();
+				this.player.object.position.y = 40;
 				this.scene.add(this.player.object);
 				this.player.object.add(streetManObject);
 				this.animations.Idle = streetManObject.animations[0];
@@ -277,8 +279,8 @@ class Game{
 			moveEvent: ['mousemove', 'touchmove', 'pointermove'],
 			endEvent: ['mouseup', 'touchend', 'pointerup'],
 			vertical: true,    // Boolean, if true slider will be displayed in vertical orientation
-			min: 5,          // Number, 0
-			max: 30,          // Number, 100
+			min: 3,          // Number, 0
+			max: 20,          // Number, 100
 			step: 1,         // Number, 1
 			value: 15,        // Number, center of slider
 			buffer: null,       // Number, in percent, 0 by default
@@ -467,7 +469,47 @@ class Game{
         this.scene.add(stage);
 	}
 
-    
+	dropCan(dt){
+		console.log("here");
+		const pos = this.player.sprayCan.position.clone();
+		let dir = new THREE.Vector3();
+		let raycaster = new THREE.Raycaster(pos, dir);
+		const colliders = this.colliders;
+
+		if (colliders!==undefined){
+			
+			//cast down
+			dir.set(0,-1,0);
+			raycaster = new THREE.Raycaster(pos, dir);
+			const gravity = 30;
+
+			let intersect = raycaster.intersectObjects(colliders);
+			if (intersect.length>0){
+				const targetY = pos.y - intersect[0].distance;
+					if (targetY < this.player.sprayCan.position.y){
+					//Falling
+					if (this.player.sprayCan.velocityY==undefined) this.player.sprayCan.velocityY = 0;
+					this.player.sprayCan.velocityY += dt * gravity;
+					this.player.sprayCan.position.y -= this.player.sprayCan.velocityY;
+					if (this.player.sprayCan.position.y < targetY){
+						this.player.sprayCan.velocityY = 0;
+						this.player.sprayCan.position.y = targetY;
+					}
+				}
+			} else if (this.player.sprayCan.position.y>0){
+                if (this.player.sprayCan.velocityY==undefined) this.player.sprayCan.velocityY = 0;
+                this.player.sprayCan.velocityY += dt * gravity;
+                this.player.sprayCan.position.y -= this.player.sprayCan.velocityY;
+                if (this.player.sprayCan.position.y < 0){
+                    this.player.sprayCan.velocityY = 0;
+                    this.player.sprayCan.position.y = 0;
+                }
+            }
+		}
+        
+	}
+	
+
     movePlayer(dt){
 		const pos = this.player.object.position.clone();
 		pos.y += 60;
@@ -664,9 +706,9 @@ class Game{
 	}
 
 	spray() {
-		let geometry1 = new THREE.TetrahedronGeometry().scale(5, 5, 5);
-		let geometry2 = new THREE.SphereGeometry().scale(5, 5, 5);
-		let geometry3 = new THREE.DodecahedronGeometry().scale(5, 5, 5);
+		let geometry1 = new THREE.TetrahedronGeometry().scale(15, 15, 15);
+		let geometry2 = new THREE.SphereGeometry().scale(15, 15, 15);
+		let geometry3 = new THREE.DodecahedronGeometry().scale(15, 15, 15);
 		let material = new THREE.MeshBasicMaterial( {color: this.player.sprayColourSelected} );
 		let marking = new THREE.Mesh();
 		marking.material = material;
@@ -751,6 +793,8 @@ class Game{
 		// console.log("where is the can", this.player.sprayCan.position);
 		if (this.player.move !== undefined) this.movePlayer(dt);
 		
+		if (!this.player.spraying) this.dropCan(dt);
+
 		if (this.player.cameras!=undefined && this.player.cameras.active!=undefined){
 			if (this.player.cameras.active == this.player.cameras.fps) {
 				//1st person perspective
